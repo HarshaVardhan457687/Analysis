@@ -1,0 +1,23 @@
+<div class="chart-card">
+    <h2>Individual Team Member Performance</h2>
+    <div class="chart-container">
+      <ngx-charts-line-chart
+        [view]="view"
+        [scheme]="defaultColors"
+        [results]="lineChartData"
+        [gradient]="gradient"
+        [xAxis]="showXAxis"
+        [yAxis]="showYAxis"
+        [legend]="showLegend"
+        [showXAxisLabel]="showXAxisLabel"
+        [showYAxisLabel]="showYAxisLabel"
+        [xAxisLabel]="xAxisLabel"
+        [yAxisLabel]="yAxisLabel"
+        [roundDomains]="roundDomains"
+        [animations]="animations"
+        [tooltipDisabled]="tooltipDisabled"
+        [yAxisTickFormatting]="yAxisTickFormatting"
+        (select)="onSelect($event)">
+      </ngx-charts-line-chart>
+    </div>
+  </div>

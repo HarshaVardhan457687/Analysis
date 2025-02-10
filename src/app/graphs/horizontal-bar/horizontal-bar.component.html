@@ -1,0 +1,19 @@
+<div class="chart-card">
+  <h2>Key Results</h2>
+  <div class="chart-container">
+    <ngx-charts-bar-horizontal
+      [view]="view"
+      [scheme]="defaultColors"
+      [results]="horizontalBarData"
+      [gradient]="gradient"
+      [xAxis]="showXAxis"
+      [yAxis]="showYAxis"
+      [legend]="false"
+      [showXAxisLabel]="showXAxisLabel"
+      [showYAxisLabel]="showYAxisLabel"
+      [xAxisLabel]="yAxisLabel"
+      [yAxisLabel]="xAxisLabel"
+      (select)="onSelect($event)">
+    </ngx-charts-bar-horizontal>
+  </div>
+</div>
