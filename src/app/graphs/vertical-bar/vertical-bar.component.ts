@@ -23,7 +23,7 @@ export class VerticalBarComponent {
         { name: 'A7', value: 85 },
         { name: 'A8', value: 63 },
         { name: 'A9', value: 77 },
-        { name: 'A10', value: 69 }
+        { name: 'A10', value: 150 }
       ]
     }
   ];
