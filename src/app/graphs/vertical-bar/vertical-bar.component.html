@@ -1,19 +1,23 @@
 <div class="chart-card">
-    <h2>Team wise Performance</h2>
-    <div class="chart-container">
-      <ngx-charts-bar-vertical
-        [view]="view"
-        [scheme]="defaultColors"
-        [results]="barChartData[0].series"
-        [gradient]="gradient"
-        [xAxis]="showXAxis"
-        [yAxis]="showYAxis"
-        [legend]="false"
-        [showXAxisLabel]="showXAxisLabel"
-        [showYAxisLabel]="showYAxisLabel"
-        [xAxisLabel]="xAxisLabel"
-        [yAxisLabel]="yAxisLabel"
-        (select)="onSelect($event)">
-      </ngx-charts-bar-vertical>
+  <h2>Team wise Performance</h2>
+  <div class="chart-container">
+    <div class="vertical-bar-scroll">
+      <div class="vertical-bar-content">
+        <ngx-charts-bar-vertical
+          [view]="view"
+          [scheme]="defaultColors"
+          [results]="barChartData[0].series"
+          [gradient]="gradient"
+          [xAxis]="showXAxis"
+          [yAxis]="showYAxis"
+          [legend]="false"
+          [showXAxisLabel]="showXAxisLabel"
+          [showYAxisLabel]="showYAxisLabel"
+          [xAxisLabel]="xAxisLabel"
+          [yAxisLabel]="yAxisLabel"
+          (select)="onSelect($event)">
+        </ngx-charts-bar-vertical>
+      </div>
     </div>
   </div>
+</div>

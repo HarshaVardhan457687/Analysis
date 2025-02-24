@@ -1,15 +1,34 @@
 <div class="chart-card">
-    <h2>Overall Progress</h2>
-    <div class="chart-container">
+  <div class="header-container">
+    <h2 class="clickable-title" (click)="toggleDropdown()">
+      Objective Performance
+      <span class="dropdown-arrow" [class.open]="showDropdown">▼</span>
+    </h2>
+    <div class="dropdown-container" *ngIf="showDropdown">
+      <div class="dropdown-menu">
+        <div class="dropdown-item" (click)="selectKeyResult('kr1')">Chaitanya</div>
+        <div class="dropdown-item" (click)="selectKeyResult('kr2')">Aryan</div>
+        <div class="dropdown-item" (click)="selectKeyResult('kr3')">Harsha</div>
+      </div>
+    </div>
+  </div>
+  <div class="chart-container">
+    <div class="chart-area">
       <ngx-charts-pie-chart
-        [view]="view"
+        [view]="[300, 170]"
         [scheme]="pieChartColors"
         [results]="pieChartData"
         [gradient]="gradient"
         [labels]="showLabels"
         [doughnut]="isDoughnut"
-        [legendPosition]="legendPosition"
         (select)="onSelect($event)">
       </ngx-charts-pie-chart>
     </div>
+    <div class="custom-legend">
+      <div class="legend-item" *ngFor="let item of pieChartData">
+        <div class="color-dot" [style.background-color]="getColor(item.name)"></div>
+        <span class="legend-label">{{ item.name }} ({{ item.value }}%)</span>
+      </div>
+    </div>
   </div>
+</div>

@@ -19,8 +19,8 @@ export class PerformanceComponent {
         { name: 'Chaithu', value: 35 },
         { name: 'Harsha', value: 60 },
         { name: 'Aseer', value: 81 },
-        { name: 'Karthik', value: 60},
-        { name: 'varshi', value: 55  }
+        { name: 'Karthik', value: 60 },
+        { name: 'Varshi', value: 55 }
       ]
     }
   ];
@@ -28,7 +28,7 @@ export class PerformanceComponent {
   // Chart options
   view: [number, number] = [500, 180];
   gradient = false;
-  showLegend = true;
+  showLegend = false; // Legend removed
   showLabels = true;
   isDoughnut = true;
   legendPosition: LegendPosition = LegendPosition.Below;

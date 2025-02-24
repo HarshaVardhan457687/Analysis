@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { NgxChartsModule, LegendPosition } from '@swimlane/ngx-charts';
 import { CommonModule } from '@angular/common';
 import { Color, ScaleType } from '@swimlane/ngx-charts';
@@ -10,12 +10,17 @@ import { Color, ScaleType } from '@swimlane/ngx-charts';
   templateUrl: './horizontal-bar.component.html',
   styleUrls: ['./horizontal-bar.component.css'] // Fixed styleUrls array
 })
-export class HorizontalBarComponent {
+export class HorizontalBarComponent implements OnInit {
 
   horizontalBarData = [
     { name: 'Project A', value: 30 },
-    { name: 'Project B', value: 60 },
-    { name: 'Project C', value: 100 },
+    { name: 'Project B', value: 100 },
+    { name: 'Project C', value: 5 },
+    { name: 'Project D', value: 67 },
+    { name: 'Project E', value: 46 },
+    { name: 'Project F', value: 41 },
+    { name: 'Project G', value: 45 },
+    { name: 'Project H', value: 43 },
   ];
 
   view: [number, number] = [500, 180];
@@ -55,6 +60,18 @@ export class HorizontalBarComponent {
   };
 
   constructor() {}
+
+  ngOnInit(): void {
+    this.adjustChartHeight();
+  }
+
+  adjustChartHeight(): void {
+    const baseHeight = 180; // Base height for 3 projects
+    const additionalHeight = 50; // Additional height per project
+    const totalProjects = this.horizontalBarData.length;
+    const newHeight = totalProjects > 3 ? baseHeight + (totalProjects - 3) * additionalHeight : baseHeight;
+    this.view = [500, newHeight];
+  }
 
   onSelect(data: any): void {
     console.log('Item clicked', JSON.parse(JSON.stringify(data)));
