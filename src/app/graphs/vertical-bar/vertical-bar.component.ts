@@ -23,13 +23,13 @@ export class VerticalBarComponent {
         { name: 'A7', value: 85 },
         { name: 'A8', value: 63 },
         { name: 'A9', value: 77 },
-        { name: 'A10', value: 150 }
+        { name: 'A10', value: 10 }
       ]
     }
   ];
  
-  // Chart options
-  view: [number, number] = [1000, 150];
+  // Chart options - reduced dimensions
+  view: [number, number] = [700, 180];
  
   // Set initial visible data to show all 10 teams
   visibleData = this.barChartData[0].series;
@@ -40,10 +40,10 @@ export class VerticalBarComponent {
   legendPosition: LegendPosition = LegendPosition.Below;
   showXAxis = true;
   showYAxis = true;
-  showXAxisLabel = true;
-  showYAxisLabel = true;
-  xAxisLabel = 'Teams';
-  yAxisLabel = 'Value';
+  showXAxisLabel = false;  // Hide built-in X-axis label
+  showYAxisLabel = false;  // Hide built-in Y-axis label
+  xAxisLabel = '';  // Empty X-axis label
+  yAxisLabel = '';  // Empty Y-axis label
   timeline = false;
   
   // Specific options for line chart

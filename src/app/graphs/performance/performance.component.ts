@@ -1,22 +1,18 @@
 // performance.component.ts
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { NgxChartsModule, LegendPosition } from '@swimlane/ngx-charts';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Color, ScaleType } from '@swimlane/ngx-charts';
 
-interface TeamMetric {
-  name: string;
-  value: number;
+interface MonthlyTask {
+  name: string; // Month name
+  value: number; // Tasks
 }
 
 interface TeamData {
   name: string;
-  series: TeamMetric[];
-}
-
-type TeamDataMap = {
-  [key in 'Team 1' | 'Team 2' | 'Team 3']: TeamData[];
+  series: MonthlyTask[];
 }
 
 @Component({
@@ -26,54 +22,30 @@ type TeamDataMap = {
   templateUrl: './performance.component.html',
   styleUrl: './performance.component.css'
 })
-export class PerformanceComponent {
-  teams = ['Team 1', 'Team 2', 'Team 3'] as const;
-  selectedTeam: 'Team 1' | 'Team 2' | 'Team 3' = 'Team 1';
+export class PerformanceComponent implements OnInit {
+  // All months data for Team 1 only
+  allMonthsData = [
+    {
+      name: 'Tasks',
+      series: [
+        { name: 'January', value: 20 },
+        { name: 'February', value: 35 },
+        { name: 'March', value: 60 },
+        { name: 'April', value: 81 },
+        { name: 'May', value: 60 },
+        { name: 'June', value: 55 },
+        { name: 'July', value: 45 },
+        { name: 'August', value: 70 },
+        { name: 'September', value: 63 },
+        { name: 'October', value: 58 },
+        { name: 'November', value: 72 },
+        { name: 'December', value: 65 }
+      ]
+    }
+  ];
 
-  teamData: TeamDataMap = {
-    'Team 1': [
-      {
-        name: 'Performance Metrics',
-        series: [
-          { name: 'Aryan', value: 20 },
-          { name: 'Chaithu', value: 35 },
-          { name: 'Harsha', value: 60 },
-          { name: 'Aseer', value: 81 },
-          { name: 'Karthik', value: 60 },
-          { name: 'Varshi', value: 55 }
-        ]
-      }
-    ],
-    'Team 2': [
-      {
-        name: 'Performance Metrics',
-        series: [
-          { name: 'Sarah', value: 45 },
-          { name: 'John', value: 65 },
-          { name: 'Mike', value: 40 },
-          { name: 'Lisa', value: 75 },
-          { name: 'David', value: 58 },
-          { name: 'Emma', value: 70 }
-        ]
-      }
-    ],
-    'Team 3': [
-      {
-        name: 'Performance Metrics',
-        series: [
-          { name: 'Alex', value: 50 },
-          { name: 'Maria', value: 72 },
-          { name: 'James', value: 63 },
-          { name: 'Nina', value: 45 },
-          { name: 'Chris', value: 68 },
-          { name: 'Sophie', value: 55 }
-        ]
-      }
-    ]
-  };
-
-  currentTeamData = this.teamData['Team 1'];
-
+  currentTeamData: TeamData[] = [];
+  
   // Chart options
   view: [number, number] = [500, 180];
   gradient = false;
@@ -85,8 +57,8 @@ export class PerformanceComponent {
   showYAxis = true;
   showXAxisLabel = true;
   showYAxisLabel = true;
-  xAxisLabel = 'Team Members';
-  yAxisLabel = 'Value';
+  xAxisLabel = '';
+  yAxisLabel = 'Tasks';
   timeline = false;
 
   // Specific options for line chart
@@ -95,7 +67,11 @@ export class PerformanceComponent {
   roundDomains = true;
   tooltipDisabled = false;
   animations = true;
-
+  
+  // Control how many months to show 
+  currentStartIndex = 0;
+  monthsToShow = 6;
+  
   defaultColors: Color = {
     name: 'custom',
     selectable: true,
@@ -103,8 +79,21 @@ export class PerformanceComponent {
     domain: ['#2196F3']
   };
 
-  onTeamChange(): void {
-    this.currentTeamData = this.teamData[this.selectedTeam];
+  ngOnInit(): void {
+    this.updateVisibleData();
+  }
+
+  updateVisibleData(): void {
+    // Create filtered version of data with only visible months
+    const visibleSeries = this.allMonthsData[0].series
+      .slice(this.currentStartIndex, this.currentStartIndex + this.monthsToShow);
+    
+    this.currentTeamData = [
+      {
+        name: 'Tasks',
+        series: visibleSeries
+      }
+    ];
   }
 
   onSelect(data: any): void {
@@ -112,4 +101,26 @@ export class PerformanceComponent {
   }
 
   yAxisTickFormatting = (val: any) => `${val}`;
+  
+  scrollRight(): void {
+    if (this.currentStartIndex + this.monthsToShow < 12) {
+      this.currentStartIndex++;
+      this.updateVisibleData();
+    }
+  }
+  
+  scrollLeft(): void {
+    if (this.currentStartIndex > 0) {
+      this.currentStartIndex--;
+      this.updateVisibleData();
+    }
+  }
+
+  get canScrollLeft(): boolean {
+    return this.currentStartIndex > 0;
+  }
+
+  get canScrollRight(): boolean {
+    return this.currentStartIndex + this.monthsToShow < 12;
+  }
 }

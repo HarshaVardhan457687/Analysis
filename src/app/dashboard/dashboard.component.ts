@@ -7,7 +7,7 @@ import { DistributionComponent } from '../graphs/distribution/distribution.compo
 import { HorizontalBarComponent } from '../graphs/horizontal-bar/horizontal-bar.component';
 import { VerticalBarComponent } from '../graphs/vertical-bar/vertical-bar.component';
 import { PerformanceComponent } from '../graphs/performance/performance.component';
-import { NavbarComponent } from '../shared/navbar/navbar.component';
+
 
 
 
@@ -16,7 +16,7 @@ import { NavbarComponent } from '../shared/navbar/navbar.component';
   standalone: true,
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.css'],
-  imports: [NgxChartsModule, CommonModule,PerformanceComponent,VerticalBarComponent,HorizontalBarComponent,DistributionComponent,NavbarComponent]
+  imports: [NgxChartsModule, CommonModule,PerformanceComponent,VerticalBarComponent,HorizontalBarComponent,DistributionComponent]
 })
 export class DashboardComponent {
   // Pie Chart Data

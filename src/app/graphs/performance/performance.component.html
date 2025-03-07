@@ -1,9 +1,6 @@
 <div class="chart-card">
   <div class="header-container">
-    <h2>Individual Team Member Performance</h2>
-    <select [(ngModel)]="selectedTeam" (change)="onTeamChange()" class="team-select">
-      <option *ngFor="let team of teams" [value]="team">{{team}}</option>
-    </select>
+    <h2>Project Progress</h2>
   </div>
   <div class="chart-container">
     <ngx-charts-line-chart
@@ -24,5 +21,13 @@
       [yAxisTickFormatting]="yAxisTickFormatting"
       (select)="onSelect($event)">
     </ngx-charts-line-chart>
+  </div>
+  <div class="chart-controls">
+    <button class="scroll-button" [disabled]="!canScrollLeft" (click)="scrollLeft()">
+      ← Previous
+    </button>
+    <button class="scroll-button" [disabled]="!canScrollRight" (click)="scrollRight()">
+      Next →
+    </button>
   </div>
 </div>

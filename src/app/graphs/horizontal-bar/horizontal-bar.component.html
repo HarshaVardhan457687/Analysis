@@ -1,21 +1,53 @@
 <div class="chart-card">
-  <h2>Key Results</h2>
-  <div class="chart-scroll-container">
-    <div class="chart-container">
-      <ngx-charts-bar-horizontal
-        [view]="view"
-        [scheme]="defaultColors"
-        [results]="horizontalBarData"
-        [gradient]="gradient"
-        [xAxis]="showXAxis"
-        [yAxis]="showYAxis"
-        [legend]="false"
-        [showXAxisLabel]="showXAxisLabel"
-        [showYAxisLabel]="showYAxisLabel"
-        [xAxisLabel]="yAxisLabel"
-        [yAxisLabel]="xAxisLabel"
-        (select)="onSelect($event)">
-      </ngx-charts-bar-horizontal>
+  <!-- Header with title and team selector -->
+  <div class="chart-header">
+    <h2><b>Individual Team Members Performance</b></h2>
+    <div class="team-dropdown">
+      <select (change)="onTeamChange($event)">
+        <option value="team1" selected>Team 1</option>
+        <option value="team2">Team 2</option>
+        <option value="team3">Team 3</option>
+      </select>
+    </div>
+  </div>
+  
+  <!-- Main chart area with separate scrollable and fixed sections -->
+  <div class="chart-area">
+    <!-- Scrollable area for bars only -->
+    <div class="chart-scroll-container">
+      <div class="chart-content-area" #chartContainer>
+        <!-- NgxCharts component with X-axis disabled -->
+        <ngx-charts-bar-horizontal
+          [view]="view"
+          [scheme]="defaultColors"
+          [results]="displayedTeamData"
+          [gradient]="gradient"
+          [xAxis]="showXAxis"
+          [yAxis]="showYAxis"
+          [legend]="showLegend"
+          [showXAxisLabel]="showXAxisLabel"
+          [showYAxisLabel]="showYAxisLabel"
+          [animations]="animations"
+          [xScaleMax]="xScaleMax"
+          [xScaleMin]="xScaleMin"
+          [roundDomains]="roundDomains"
+          (select)="onSelect($event)">
+        </ngx-charts-bar-horizontal>
+      </div>
+    </div>
+    
+    <!-- Fixed area for x-axis and label -->
+    <div class="fixed-axis-container">
+      <!-- Custom x-axis with markers -->
+      <div class="custom-x-axis">
+      <b>  <div class="axis-marker" style="left: 0%">0</div>
+        <div class="axis-marker" style="left: 50%">50</div>
+        <div class="axis-marker" style="left: 100%">100</div>
+        <div class="axis-line"></div></b>
+      </div>
+      
+      <!-- X-axis label -->
+      <div class="x-axis-label"><b>Tasks Completed</b></div>
     </div>
   </div>
 </div>

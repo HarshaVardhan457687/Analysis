@@ -69,7 +69,7 @@
 
 .chart-container {
   position: relative;
-  height: 170px;
+  height: 40vh;
   display: flex;
   align-items: center;
 }

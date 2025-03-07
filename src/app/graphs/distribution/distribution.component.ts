@@ -13,15 +13,26 @@ import { Component } from '@angular/core';
 export class DistributionComponent {
   showDropdown = false;
   selectedKey: string = 'main';
+  headerTitle: string = 'Objective Performance';
 
-  // Main data for pie chart
-  pieChartData = [
+  // Objective Performance data
+  objectiveData = [
     { name: 'On Track', value: 45 },
     { name: 'At Risk', value: 30 },
     { name: 'Completed', value: 25 }
   ];
 
-  // Key Results data
+  // Data for key results
+  keyResultsData = [
+    { name: 'On Track', value: 60 },
+    { name: 'At Risk', value: 25 },
+    { name: 'Completed', value: 15 }
+  ];
+
+  // Current data to display
+  pieChartData = this.objectiveData;
+
+  // Maintaining original key results data for reference
   keyResults = [
     {
       id: 'kr1',
@@ -82,20 +93,39 @@ export class DistributionComponent {
     this.showDropdown = !this.showDropdown;
   }
 
+  // Method that toggles between Objective Performance and Key Results
+  toggleView(): void {
+    if (this.headerTitle === 'Objective Performance') {
+      this.headerTitle = 'Key Results';
+      this.pieChartData = this.keyResultsData;
+    } else {
+      this.headerTitle = 'Objective Performance';
+      this.pieChartData = this.objectiveData;
+    }
+    this.showDropdown = false;
+  }
+
+  // Adding back the showKeyResults method for compatibility
+  showKeyResults(): void {
+    this.headerTitle = 'Key Results';
+    this.pieChartData = this.keyResultsData;
+    this.showDropdown = false;
+  }
+
+  // Keeping the original method for backward compatibility
   selectKeyResult(keyId: string): void {
     this.selectedKey = keyId;
+    
     if (keyId === 'main') {
-      this.pieChartData = [
-        { name: 'On Track', value: 45 },
-        { name: 'At Risk', value: 30 },
-        { name: 'Completed', value: 25 }
-      ];
+      this.headerTitle = 'Objective Performance';
+      this.pieChartData = this.objectiveData;
     } else {
       const selectedKR = this.keyResults.find(kr => kr.id === keyId);
       if (selectedKR) {
         this.pieChartData = selectedKR.data;
       }
     }
+    
     this.showDropdown = false;
   }
 
@@ -111,4 +141,3 @@ export class DistributionComponent {
     console.log('Item clicked', JSON.parse(JSON.stringify(data)));
   }
 }
-
