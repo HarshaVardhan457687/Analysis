@@ -1,21 +1,11 @@
 <div class="chart-card">
   <div class="header-container">
-    <h2 class="clickable-title" (click)="toggleDropdown()">
-      {{ headerTitle }}
-      <span class="dropdown-arrow" [class.open]="showDropdown">▼</span>
-    </h2>
-    <div class="dropdown-container" *ngIf="showDropdown">
-      <div class="dropdown-menu">
-        <div class="dropdown-item" (click)="toggleView()">
-          {{ headerTitle === 'Objective Performance' ? 'Key Results' : 'Objective Performance' }}
-        </div>
-      </div>
-    </div>
+    <h2>{{ headerTitle }}</h2>
   </div>
   <div class="chart-container">
     <div class="chart-area">
       <ngx-charts-pie-chart
-        [view]="[300, 170]"
+        [view]="view"
         [scheme]="pieChartColors"
         [results]="pieChartData"
         [gradient]="gradient"
@@ -27,7 +17,7 @@
     <div class="custom-legend">
       <div class="legend-item" *ngFor="let item of pieChartData">
         <div class="color-dot" [style.background-color]="getColor(item.name)"></div>
-        <span class="legend-label">{{ item.name }} ({{ item.value }}%)</span>
+        <span class="legend-label">{{ item.name }} ({{ item.value | number:'1.0-0' }}%)</span>
       </div>
     </div>
   </div>

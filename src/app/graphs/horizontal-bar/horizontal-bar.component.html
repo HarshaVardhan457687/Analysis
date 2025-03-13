@@ -4,9 +4,7 @@
     <h2><b>Individual Team Members Performance</b></h2>
     <div class="team-dropdown">
       <select (change)="onTeamChange($event)">
-        <option value="team1" selected>Team 1</option>
-        <option value="team2">Team 2</option>
-        <option value="team3">Team 3</option>
+        <option *ngFor="let team of teams" [value]="team.id">Team {{team.name}}</option>
       </select>
     </div>
   </div>

@@ -1,37 +1,37 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { NgxChartsModule, LegendPosition } from '@swimlane/ngx-charts';
 import { CommonModule } from '@angular/common';
 import { Color, ScaleType } from '@swimlane/ngx-charts';
- 
+import { ApiService } from '../../Services/api.service';
+import { HttpClientModule } from '@angular/common/http';
+
+interface ChartData {
+  name: string;
+  value: number;
+}
+
 @Component({
   selector: 'app-vertical-bar',
-  imports: [NgxChartsModule, CommonModule],
+  standalone: true,
+  imports: [NgxChartsModule, CommonModule, HttpClientModule],
+  providers: [ApiService],
   templateUrl: './vertical-bar.component.html',
   styleUrl: './vertical-bar.component.css'
 })
-export class VerticalBarComponent {
+export class VerticalBarComponent implements OnInit {
   barChartData = [
     {
-      name: 'Monthly Revenue',
-      series: [
-        { name: 'A1', value: 65 },
-        { name: 'A2', value: 59 },
-        { name: 'A3', value: 80 },
-        { name: 'A4', value: 81 },
-        { name: 'A5', value: 75 },
-        { name: 'A6', value: 70 },
-        { name: 'A7', value: 85 },
-        { name: 'A8', value: 63 },
-        { name: 'A9', value: 77 },
-        { name: 'A10', value: 10 }
-      ]
+      name: 'Team Progress',
+      series: [] as ChartData[]
     }
   ];
+
+  currentProject = 1; // Default project ID
  
   // Chart options - reduced dimensions
   view: [number, number] = [700, 180];
  
-  // Set initial visible data to show all 10 teams
+  // Set initial visible data
   visibleData = this.barChartData[0].series;
   gradient = false;
   showLegend = true;
@@ -40,10 +40,10 @@ export class VerticalBarComponent {
   legendPosition: LegendPosition = LegendPosition.Below;
   showXAxis = true;
   showYAxis = true;
-  showXAxisLabel = false;  // Hide built-in X-axis label
-  showYAxisLabel = false;  // Hide built-in Y-axis label
-  xAxisLabel = '';  // Empty X-axis label
-  yAxisLabel = '';  // Empty Y-axis label
+  showXAxisLabel = false;
+  showYAxisLabel = false;
+  xAxisLabel = '';
+  yAxisLabel = '';
   timeline = false;
   
   // Specific options for line chart
@@ -53,14 +53,6 @@ export class VerticalBarComponent {
   tooltipDisabled = false;
   animations = true;
  
-  // Different color schemes for different charts
-  pieChartColors: Color = {
-    name: 'custom',
-    selectable: true,
-    group: ScaleType.Ordinal,
-    domain: ['#FF1493', '#32CD32', '#FFD700', '#00CED1']
-  };
- 
   defaultColors: Color = {
     name: 'custom',
     selectable: true,
@@ -68,11 +60,38 @@ export class VerticalBarComponent {
     domain: ['#2196F3']
   };
  
-  constructor() {}
+  constructor(private apiService: ApiService) {}
+
+  ngOnInit(): void {
+    // Load team progress for teams 1-10
+    this.loadTeamsProgress();
+  }
+
+  loadTeamsProgress(): void {
+    this.apiService.getTeams(this.currentProject).subscribe(teams => {
+      if (teams.length > 0) {
+        const progressPromises = teams.map(team => 
+          this.apiService.getTeamProgress(this.currentProject, team.id).toPromise()
+        );
+
+        Promise.all(progressPromises)
+          .then(results => {
+            this.barChartData[0].series = teams.map((team, index) => ({
+              name: team.name,
+              value: results[index] ? results[index].progress : 0
+            }));
+            this.visibleData = this.barChartData[0].series;
+          })
+          .catch(error => {
+            console.error('Error loading team progress:', error);
+          });
+      }
+    });
+  }
  
   onSelect(data: any): void {
     console.log('Item clicked', JSON.parse(JSON.stringify(data)));
   }
  
-  yAxisTickFormatting = (val: any) => `${val}`;
+  yAxisTickFormatting = (val: any) => `${val}%`;
 }

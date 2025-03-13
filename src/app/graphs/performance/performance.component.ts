@@ -6,8 +6,8 @@ import { FormsModule } from '@angular/forms';
 import { Color, ScaleType } from '@swimlane/ngx-charts';
 
 interface MonthlyTask {
-  name: string; // Month name
-  value: number; // Tasks
+  name: string;
+  value: number;
 }
 
 interface TeamData {
@@ -23,35 +23,33 @@ interface TeamData {
   styleUrl: './performance.component.css'
 })
 export class PerformanceComponent implements OnInit {
-  // All months data for Team 1 only
   allMonthsData = [
     {
       name: 'Tasks',
       series: [
-        { name: 'January', value: 20 },
-        { name: 'February', value: 35 },
-        { name: 'March', value: 60 },
-        { name: 'April', value: 81 },
+        { name: 'Jan', value: 20 },
+        { name: 'Feb', value: 35 },
+        { name: 'Mar', value: 60 },
+        { name: 'Apr', value: 81 },
         { name: 'May', value: 60 },
-        { name: 'June', value: 55 },
-        { name: 'July', value: 45 },
-        { name: 'August', value: 70 },
-        { name: 'September', value: 63 },
-        { name: 'October', value: 58 },
-        { name: 'November', value: 72 },
-        { name: 'December', value: 65 }
+        { name: 'Jun', value: 55 },
+        { name: 'Jul', value: 48 },
+        { name: 'Aug', value: 70 },
+        { name: 'Sep', value: 63 },
+        { name: 'Oct', value: 58 },
+        { name: 'Nov', value: 72 },
+        { name: 'Dec', value: 65 }
       ]
     }
   ];
 
   currentTeamData: TeamData[] = [];
   
-  // Chart options
-  view: [number, number] = [500, 180];
+  view: [number, number] = [500, 200];
   gradient = false;
   showLegend = false;
   showLabels = true;
-  isDoughnut = true;
+  isDoughnut = false;
   legendPosition: LegendPosition = LegendPosition.Below;
   showXAxis = true;
   showYAxis = true;
@@ -61,14 +59,12 @@ export class PerformanceComponent implements OnInit {
   yAxisLabel = 'Tasks';
   timeline = false;
 
-  // Specific options for line chart
   showRefLines = true;
   showRefLabels = true;
   roundDomains = true;
   tooltipDisabled = false;
   animations = true;
   
-  // Control how many months to show 
   currentStartIndex = 0;
   monthsToShow = 6;
   
@@ -80,30 +76,35 @@ export class PerformanceComponent implements OnInit {
   };
 
   ngOnInit(): void {
-    this.updateVisibleData();
+    this.initializeData();
+  }
+
+  initializeData(): void {
+    this.currentTeamData = [{
+      name: 'Tasks',
+      series: this.allMonthsData[0].series.slice(0, this.monthsToShow)
+    }];
   }
 
   updateVisibleData(): void {
-    // Create filtered version of data with only visible months
     const visibleSeries = this.allMonthsData[0].series
       .slice(this.currentStartIndex, this.currentStartIndex + this.monthsToShow);
     
-    this.currentTeamData = [
-      {
-        name: 'Tasks',
-        series: visibleSeries
-      }
-    ];
+    this.currentTeamData = [{
+      name: 'Tasks',
+      series: visibleSeries
+    }];
   }
 
   onSelect(data: any): void {
     console.log('Item clicked', JSON.parse(JSON.stringify(data)));
   }
 
-  yAxisTickFormatting = (val: any) => `${val}`;
+  yAxisTickFormatting = (val: number): string => `${val}`;
   
   scrollRight(): void {
-    if (this.currentStartIndex + this.monthsToShow < 12) {
+    const maxStartIndex = this.allMonthsData[0].series.length - this.monthsToShow;
+    if (this.currentStartIndex < maxStartIndex) {
       this.currentStartIndex++;
       this.updateVisibleData();
     }
@@ -121,6 +122,7 @@ export class PerformanceComponent implements OnInit {
   }
 
   get canScrollRight(): boolean {
-    return this.currentStartIndex + this.monthsToShow < 12;
+    const maxStartIndex = this.allMonthsData[0].series.length - this.monthsToShow;
+    return this.currentStartIndex < maxStartIndex;
   }
 }

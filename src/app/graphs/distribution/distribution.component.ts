@@ -1,69 +1,25 @@
-import { NgxChartsModule, LegendPosition } from '@swimlane/ngx-charts';
+import { NgxChartsModule, Color, ScaleType } from '@swimlane/ngx-charts';
 import { CommonModule } from '@angular/common';
-import { Color, ScaleType } from '@swimlane/ngx-charts';
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { ApiService } from '../../Services/api.service';
+import { HttpClientModule } from '@angular/common/http';
 
 @Component({
   selector: 'app-distribution',
-  imports: [NgxChartsModule, CommonModule],
+  imports: [NgxChartsModule, CommonModule, HttpClientModule],
+  providers: [ApiService],
   templateUrl: './distribution.component.html',
   styleUrl: './distribution.component.css',
   standalone: true
 })
-export class DistributionComponent {
+export class DistributionComponent implements OnInit {
   showDropdown = false;
-  selectedKey: string = 'main';
   headerTitle: string = 'Objective Performance';
+  currentProject = 1; // Default project ID
 
-  // Objective Performance data
-  objectiveData = [
-    { name: 'On Track', value: 45 },
-    { name: 'At Risk', value: 30 },
-    { name: 'Completed', value: 25 }
-  ];
+  pieChartData: any[] = [];
 
-  // Data for key results
-  keyResultsData = [
-    { name: 'On Track', value: 60 },
-    { name: 'At Risk', value: 25 },
-    { name: 'Completed', value: 15 }
-  ];
-
-  // Current data to display
-  pieChartData = this.objectiveData;
-
-  // Maintaining original key results data for reference
-  keyResults = [
-    {
-      id: 'kr1',
-      name: 'Increase Revenue by 30%',
-      data: [
-        { name: 'On Track', value: 60 },
-        { name: 'At Risk', value: 25 },
-        { name: 'Completed', value: 15 }
-      ]
-    },
-    {
-      id: 'kr2',
-      name: 'Launch 5 New Products',
-      data: [
-        { name: 'On Track', value: 40 },
-        { name: 'At Risk', value: 35 },
-        { name: 'Completed', value: 25 }
-      ]
-    },
-    {
-      id: 'kr3',
-      name: 'Expand to 3 New Markets',
-      data: [
-        { name: 'On Track', value: 30 },
-        { name: 'At Risk', value: 45 },
-        { name: 'Completed', value: 25 }
-      ]
-    }
-  ];
-
-  view: [number, number] = [500, 200];
+  view: [number, number] = [300, 170];
   gradient = false;
   showLegend = false;
   showLabels = false;
@@ -75,6 +31,42 @@ export class DistributionComponent {
     group: ScaleType.Ordinal,
     domain: ['#32CD32', '#FFD700', '#2196F3']
   };
+
+  constructor(private apiService: ApiService) {
+    this.resetChartData(); // Initialize with zero values
+  }
+
+  ngOnInit(): void {
+    this.loadObjectivePerformance();
+  }
+
+  loadObjectivePerformance(): void {
+    this.apiService.getObjectivePerformance(this.currentProject)
+      .subscribe({
+        next: (data) => {
+          if (data && data.length > 0) {
+            this.pieChartData = data.map(item => ({
+              ...item,
+              value: item.value || 0 // Ensure value is 0 if null/undefined
+            }));
+          } else {
+            this.resetChartData();
+          }
+        },
+        error: () => {
+          this.resetChartData();
+        }
+      });
+  }
+
+  resetChartData(): void {
+    // Initialize with zero values
+    this.pieChartData = [
+      { name: 'On Track', value: 0 },
+      { name: 'At Risk', value: 0 },
+      { name: 'Completed', value: 0 }
+    ];
+  }
 
   getColor(name: string): string {
     switch (name) {
@@ -91,50 +83,6 @@ export class DistributionComponent {
 
   toggleDropdown(): void {
     this.showDropdown = !this.showDropdown;
-  }
-
-  // Method that toggles between Objective Performance and Key Results
-  toggleView(): void {
-    if (this.headerTitle === 'Objective Performance') {
-      this.headerTitle = 'Key Results';
-      this.pieChartData = this.keyResultsData;
-    } else {
-      this.headerTitle = 'Objective Performance';
-      this.pieChartData = this.objectiveData;
-    }
-    this.showDropdown = false;
-  }
-
-  // Adding back the showKeyResults method for compatibility
-  showKeyResults(): void {
-    this.headerTitle = 'Key Results';
-    this.pieChartData = this.keyResultsData;
-    this.showDropdown = false;
-  }
-
-  // Keeping the original method for backward compatibility
-  selectKeyResult(keyId: string): void {
-    this.selectedKey = keyId;
-    
-    if (keyId === 'main') {
-      this.headerTitle = 'Objective Performance';
-      this.pieChartData = this.objectiveData;
-    } else {
-      const selectedKR = this.keyResults.find(kr => kr.id === keyId);
-      if (selectedKR) {
-        this.pieChartData = selectedKR.data;
-      }
-    }
-    
-    this.showDropdown = false;
-  }
-
-  getSelectedKeyResultName(): string {
-    if (this.selectedKey === 'main') {
-      return 'Objective Progress';
-    }
-    const selectedKR = this.keyResults.find(kr => kr.id === this.selectedKey);
-    return selectedKR ? selectedKR.name : 'Objective Progress';
   }
 
   onSelect(data: any): void {
