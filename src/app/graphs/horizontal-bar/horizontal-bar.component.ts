@@ -1,131 +1,136 @@
-import { Component, OnInit, Inject, PLATFORM_ID, ViewChild, ElementRef, AfterViewInit } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { isPlatformBrowser } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
-import { provideAnimations } from '@angular/platform-browser/animations';
+import { NgxChartsModule, Color, ScaleType } from '@swimlane/ngx-charts';
 import { ApiService } from '../../Services/api.service';
-import { NgxChartsModule, Color, LegendPosition, ScaleType } from '@swimlane/ngx-charts';
+import { Subject, takeUntil, timeout } from 'rxjs';
 
 interface ChartData {
   name: string;
   value: number;
-}
-
-interface Team {
-  id: number;
-  name: string;
+  extra: {
+    role: string;
+    totalTasks: number;
+    completedTasks: number;
+  };
 }
 
 @Component({
   selector: 'app-horizontal-bar',
   standalone: true,
   imports: [NgxChartsModule, CommonModule, HttpClientModule],
-  providers: [provideAnimations(), ApiService],
+  providers: [ApiService],
   templateUrl: './horizontal-bar.component.html',
   styleUrls: ['./horizontal-bar.component.css']
 })
-export class HorizontalBarComponent implements OnInit, AfterViewInit {
-  @ViewChild('chartContainer') chartContainer!: ElementRef;
+export class HorizontalBarComponent implements OnInit, OnDestroy {
+  private destroy$ = new Subject<void>();
+  chartData: ChartData[] = [];
+  view: [number, number] = [600, 500];  // Default view size
+  errorMessage: string | null = null;
+  isBackendAvailable = true;
 
-  // Currently displayed data
-  displayedTeamData: ChartData[] = [];
-  teams: Team[] = [];
-  currentTeam = 1; // Default team ID
-  currentProject = 1; // Default project ID
-
-  // Chart dimensions
-  view: [number, number] = [600, 200];
-  
   // Chart options
-  gradient = false;
-  showLegend = false;
-  showLabels = true;
-  isDoughnut = false;
-  legendPosition: LegendPosition = LegendPosition.Below;
-  showXAxis = false;
+  showXAxis = true;
   showYAxis = true;
-  showXAxisLabel = false;
+  showXAxisLabel = true;
   showYAxisLabel = false;
-  xAxisLabel = '';
-  yAxisLabel = '';
-  timeline = false;
-  
-  // Specific options for the chart
-  showRefLines = false;
-  showRefLabels = false;
-  roundDomains = true;
-  tooltipDisabled = false;
-  animations = true;
-  xScaleMax = 100;
+  xAxisLabel = 'Progress (%)';
+  yAxisLabel = 'Team Members';
   xScaleMin = 0;
-
-  defaultColors: Color = {
+  xScaleMax = 100;
+  colorScheme: Color = {
     name: 'custom',
     selectable: true,
     group: ScaleType.Ordinal,
-    domain: ['#2196F3']
+    domain: ['#1976d2']
   };
 
-  isBrowser: boolean;
-
   constructor(
-    @Inject(PLATFORM_ID) private platformId: Object,
-    private apiService: ApiService
+    private apiService: ApiService,
+    private cdr: ChangeDetectorRef
   ) {
-    this.isBrowser = isPlatformBrowser(this.platformId);
+    console.log('Component constructor called');
   }
 
-  ngOnInit(): void {
-    if (this.isBrowser) {
-      window.addEventListener('resize', () => this.adjustChartSize());
-      this.loadTeams();
-    }
-  }
-
-  ngAfterViewInit(): void {
-    if (this.isBrowser) {
-      setTimeout(() => this.adjustChartSize(), 0);
-    }
-  }
-
-  loadTeams(): void {
-    this.apiService.getTeams(this.currentProject).subscribe(teams => {
-      this.teams = teams;
-      if (teams.length > 0) {
-        this.currentTeam = teams[0].id;
-        this.loadTeamMembersProgress();
-      }
-    });
-  }
-
-  loadTeamMembersProgress(): void {
-    this.apiService.getTeamMembersProgress(this.currentTeam, this.currentProject)
-      .subscribe(members => {
-        this.displayedTeamData = members.map(member => ({
-          name: member.userName,
-          value: member.progress
-        }));
-        this.adjustChartSize();
-      });
-  }
-
-  adjustChartSize(): void {
-    if (this.isBrowser && this.chartContainer) {
-      const element = this.chartContainer.nativeElement;
-      const width = element.clientWidth;
-      const barHeight = 35;
-      const totalContentHeight = (this.displayedTeamData.length * barHeight);
-      this.view = [width, totalContentHeight];
-    }
-  }
-
-  onTeamChange(event: any): void {
-    const teamId = parseInt(event.target.value);
-    this.currentTeam = teamId;
+  ngOnInit() {
+    console.log('ngOnInit called');
     this.loadTeamMembersProgress();
   }
 
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  loadTeamMembersProgress() {
+    console.log('Starting to load team members progress...');
+    
+    const teamId = 889191999882;
+    const projectId = 888290452986;
+    
+    console.log('Making API call with teamId:', teamId, 'projectId:', projectId);
+    
+    this.apiService.getTeamMembersProgress(teamId, projectId)
+      .pipe(
+        takeUntil(this.destroy$),
+        timeout(3000)
+      )
+      .subscribe({
+        next: (members) => {
+          console.log('Raw API response:', members);
+          if (members && Array.isArray(members) && members.length > 0) {
+            // Map and sort the data in descending order
+            this.chartData = members
+              .map(member => {
+                const progress = Number(member.progress) || 0;
+                console.log('Processing member:', member.userName, 'Progress:', progress);
+                return {
+                  name: member.userName || 'Unknown User',
+                  value: Math.min(Math.max(progress, 0), 100),
+                  extra: {
+                    role: member.role || 'No Role',
+                    totalTasks: Number(member.totalTasks) || 0,
+                    completedTasks: Number(member.completedTasks) || 0
+                  }
+                };
+              })
+              .sort((a, b) => b.value - a.value);  // Sort in descending order
+
+            // Adjust view height based on number of items
+            const itemHeight = 66;  // Approximate height per item
+            const minHeight = 200;  // Minimum height for 3 items
+            const calculatedHeight = Math.max(this.chartData.length * itemHeight, minHeight);
+            this.view = [600, calculatedHeight];
+
+            // Ensure all values are numbers and within valid range
+            this.chartData = this.chartData.map(item => ({
+              ...item,
+              value: Number(item.value)
+            }));
+
+            console.log('Final chart data:', this.chartData);
+            this.isBackendAvailable = true;
+            this.errorMessage = null;
+          } else {
+            console.log('No valid members data received');
+            this.chartData = [];
+            this.errorMessage = 'No data available';
+            this.isBackendAvailable = true;
+          }
+          this.cdr.detectChanges();
+        },
+        error: (error) => {
+          console.error('Error loading data:', error);
+          this.chartData = [];
+          this.isBackendAvailable = false;
+          this.errorMessage = 'Backend service is not available. Please check if the server is running.';
+          this.cdr.detectChanges();
+        }
+      });
+  }
+
   onSelect(data: any): void {
-    console.log('Team member selected:', JSON.parse(JSON.stringify(data)));
+    console.log('Bar clicked:', data);
   }
 }

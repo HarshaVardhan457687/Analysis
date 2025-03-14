@@ -28,6 +28,12 @@ interface ObjectivePerformance {
   COMPLETED: number;
 }
 
+interface MonthlyTaskApprovalDTO {
+  year: number;
+  month: number;
+  totalTasks: number;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -37,7 +43,7 @@ export class ApiService {
   constructor(private http: HttpClient) { }
 
   getObjectivePerformance(projectId: number): Observable<{name: string, value: number}[]> {
-    return this.http.get<ObjectivePerformance>(`${this.baseUrl}/objective/objective-performance/${projectId}`)
+    return this.http.get<ObjectivePerformance>(`${this.baseUrl}/objective/objective-performance/888290452986`)
       .pipe(
         map(data => [
           { name: 'On Track', value: data.ON_TRACK || 0 },
@@ -52,22 +58,29 @@ export class ApiService {
       );
   }
 
-  getTeams(projectId: number): Observable<Team[]> {
-    return this.http.get<Team[]>(`${this.baseUrl}/teams?projectId=${projectId}`)
-      .pipe(
-        catchError(() => of([]))
-      );
-  }
-
   getTeamProgress(projectId: number, teamId: number): Observable<TeamProgress> {
-    return this.http.get<TeamProgress>(`${this.baseUrl}/teams/progress?projectId=888290452986&teamId=889191999882`)
+    return this.http.get<TeamProgress>(`${this.baseUrl}/teams/progress?projectId=${projectId}&teamId=${teamId}`)
       .pipe(
         catchError(() => of({ progress: 0 }))
       );
   }
 
+  getTeams(projectId: number): Observable<Team[]> {
+    return this.http.get<Team[]>(`${this.baseUrl}/teams/project/${projectId}`)
+      .pipe(
+        catchError(() => of([]))
+      );
+  }
+
   getTeamMembersProgress(teamId: number, projectId: number): Observable<TeamMemberProgressDto[]> {
     return this.http.get<TeamMemberProgressDto[]>(`${this.baseUrl}/teams/project/members-progress?teamId=${teamId}&projectId=${projectId}`)
+      .pipe(
+        catchError(() => of([]))
+      );
+  }
+
+  getApprovedTasksByMonth(projectId: number): Observable<MonthlyTaskApprovalDTO[]> {
+    return this.http.get<MonthlyTaskApprovalDTO[]>(`${this.baseUrl}/approvals/approvedTasksByMonth/${projectId}`)
       .pipe(
         catchError(() => of([]))
       );

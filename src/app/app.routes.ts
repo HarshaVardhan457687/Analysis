@@ -5,11 +5,18 @@ import { HorizontalBarComponent } from './graphs/horizontal-bar/horizontal-bar.c
 import { PerformanceComponent } from './graphs/performance/performance.component';
 import { VerticalBarComponent } from './graphs/vertical-bar/vertical-bar.component';
 
-
 export const routes: Routes = [
-    {
-        path: "dashboard", component: DashboardComponent,
-        
-    },
-   
+  {
+    path: '',
+    redirectTo: 'dashboard',
+    pathMatch: 'full'
+  },
+  {
+    path: 'dashboard',
+    component: DashboardComponent
+  },
+  {
+    path: '**',
+    redirectTo: 'dashboard'
+  }
 ];

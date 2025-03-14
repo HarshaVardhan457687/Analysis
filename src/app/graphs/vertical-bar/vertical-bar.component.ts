@@ -1,9 +1,11 @@
+// vertical-bar.component.ts
 import { Component, OnInit } from '@angular/core';
 import { NgxChartsModule, LegendPosition } from '@swimlane/ngx-charts';
 import { CommonModule } from '@angular/common';
 import { Color, ScaleType } from '@swimlane/ngx-charts';
 import { ApiService } from '../../Services/api.service';
 import { HttpClientModule } from '@angular/common/http';
+import { forkJoin } from 'rxjs';
 
 interface ChartData {
   name: string;
@@ -16,82 +18,95 @@ interface ChartData {
   imports: [NgxChartsModule, CommonModule, HttpClientModule],
   providers: [ApiService],
   templateUrl: './vertical-bar.component.html',
-  styleUrl: './vertical-bar.component.css'
+  styleUrls: ['./vertical-bar.component.css']
 })
 export class VerticalBarComponent implements OnInit {
   barChartData = [
     {
-      name: 'Team Progress',
-      series: [] as ChartData[]
+      name: 'Team 1',
+      value: 0
+    },
+    {
+      name: 'Team 2',
+      value: 0
+    },
+    {
+      name: 'Team 3',
+      value: 0
     }
   ];
 
-  currentProject = 1; // Default project ID
- 
-  // Chart options - reduced dimensions
-  view: [number, number] = [700, 180];
- 
-  // Set initial visible data
-  visibleData = this.barChartData[0].series;
+  currentProject = 888290452986;
+  teams = [
+    { id: 889191999882, name: 'Team 1' },
+    { id: 955591459730, name: 'Team 2' },
+    { id: 29759564189, name: 'Team 3' }
+  ];
+
+  view: [number, number] = [500, 250];
+  errorMessage: string | null = null;
+
   gradient = false;
-  showLegend = true;
-  showLabels = true;
-  isDoughnut = true;
-  legendPosition: LegendPosition = LegendPosition.Below;
+  showLegend = false;
   showXAxis = true;
   showYAxis = true;
   showXAxisLabel = false;
   showYAxisLabel = false;
   xAxisLabel = '';
   yAxisLabel = '';
-  timeline = false;
-  
-  // Specific options for line chart
-  showRefLines = true;
-  showRefLabels = true;
+  barPadding = 4;
   roundDomains = true;
-  tooltipDisabled = false;
   animations = true;
- 
+
   defaultColors: Color = {
     name: 'custom',
     selectable: true,
     group: ScaleType.Ordinal,
-    domain: ['#2196F3']
+    domain: ['#2196F3', '#4CAF50', '#FFC107']
   };
- 
+
   constructor(private apiService: ApiService) {}
 
   ngOnInit(): void {
-    // Load team progress for teams 1-10
-    this.loadTeamsProgress();
+    this.loadAllTeamsProgress();
   }
 
-  loadTeamsProgress(): void {
-    this.apiService.getTeams(this.currentProject).subscribe(teams => {
-      if (teams.length > 0) {
-        const progressPromises = teams.map(team => 
-          this.apiService.getTeamProgress(this.currentProject, team.id).toPromise()
-        );
+  loadAllTeamsProgress(): void {
+    console.log("Loading progress for all teams");
+    this.errorMessage = null;
+    
+    const teamProgressObservables = this.teams.map(team => 
+      this.apiService.getTeamProgress(this.currentProject, team.id)
+    );
 
-        Promise.all(progressPromises)
-          .then(results => {
-            this.barChartData[0].series = teams.map((team, index) => ({
-              name: team.name,
-              value: results[index] ? results[index].progress : 0
-            }));
-            this.visibleData = this.barChartData[0].series;
-          })
-          .catch(error => {
-            console.error('Error loading team progress:', error);
-          });
+    forkJoin(teamProgressObservables).subscribe({
+      next: (results: any[]) => {
+        console.log("Raw progress responses:", results);
+        
+        // Create a new array to trigger change detection
+        const newData = this.teams.map((team, index) => ({
+          name: team.name,
+          value: Number(results[index].toFixed(2))
+        }));
+        
+        // Update the data with a new reference
+        this.barChartData = [...newData];
+        console.log("Updated chart data:", this.barChartData);
+      },
+      error: (error) => {
+        console.error('Error loading team progress:', error);
+        this.errorMessage = error.error?.message || 'An error occurred while loading team progress.';
+        this.barChartData = this.teams.map(team => ({
+          name: team.name,
+          value: 0
+        }));
       }
     });
   }
- 
+
   onSelect(data: any): void {
     console.log('Item clicked', JSON.parse(JSON.stringify(data)));
   }
- 
+
   yAxisTickFormatting = (val: any) => `${val}%`;
 }

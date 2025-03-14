@@ -1,9 +1,11 @@
 // performance.component.ts
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { NgxChartsModule, LegendPosition } from '@swimlane/ngx-charts';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Color, ScaleType } from '@swimlane/ngx-charts';
+import { ApiService } from '../../Services/api.service';
+import { interval, Subscription } from 'rxjs';
 
 interface MonthlyTask {
   name: string;
@@ -22,26 +24,11 @@ interface TeamData {
   templateUrl: './performance.component.html',
   styleUrl: './performance.component.css'
 })
-export class PerformanceComponent implements OnInit {
-  allMonthsData = [
-    {
-      name: 'Tasks',
-      series: [
-        { name: 'Jan', value: 20 },
-        { name: 'Feb', value: 35 },
-        { name: 'Mar', value: 60 },
-        { name: 'Apr', value: 81 },
-        { name: 'May', value: 60 },
-        { name: 'Jun', value: 55 },
-        { name: 'Jul', value: 48 },
-        { name: 'Aug', value: 70 },
-        { name: 'Sep', value: 63 },
-        { name: 'Oct', value: 58 },
-        { name: 'Nov', value: 72 },
-        { name: 'Dec', value: 65 }
-      ]
-    }
-  ];
+export class PerformanceComponent implements OnInit, OnDestroy {
+  allMonthsData: TeamData[] = [{
+    name: 'Tasks',
+    series: []
+  }];
 
   currentTeamData: TeamData[] = [];
   
@@ -75,8 +62,57 @@ export class PerformanceComponent implements OnInit {
     domain: ['#2196F3']
   };
 
+  private refreshSubscription: Subscription | undefined;
+  private readonly REFRESH_INTERVAL = 30000; // Refresh every 30 seconds
+
+  constructor(private apiService: ApiService) {}
+
   ngOnInit(): void {
-    this.initializeData();
+    this.loadApprovedTasks();
+    // Set up periodic refresh
+    this.refreshSubscription = interval(this.REFRESH_INTERVAL)
+      .subscribe(() => {
+        this.loadApprovedTasks();
+      });
+  }
+
+  ngOnDestroy(): void {
+    // Clean up subscription when component is destroyed
+    if (this.refreshSubscription) {
+      this.refreshSubscription.unsubscribe();
+    }
+  }
+
+  private loadApprovedTasks(): void {
+    this.apiService.getApprovedTasksByMonth(888290452986).subscribe(data => {
+      if (data && data.length > 0) {
+        // Sort data by year and month
+        data.sort((a, b) => {
+          if (a.year !== b.year) return a.year - b.year;
+          return a.month - b.month;
+        });
+
+        // Convert the data to the format needed for the chart
+        const series = data.map(item => ({
+          name: this.getMonthName(item.month),
+          value: item.totalTasks
+        }));
+
+        // Update the data
+        this.allMonthsData = [{
+          name: 'Tasks',
+          series: series
+        }];
+
+        // Update the visible data while maintaining the current view position
+        this.updateVisibleData();
+      }
+    });
+  }
+
+  private getMonthName(month: number): string {
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return months[month - 1];
   }
 
   initializeData(): void {

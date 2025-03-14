@@ -1,51 +1,39 @@
 <div class="chart-card">
-  <!-- Header with title and team selector -->
-  <div class="chart-header">
-    <h2><b>Individual Team Members Performance</b></h2>
-    <div class="team-dropdown">
-      <select (change)="onTeamChange($event)">
-        <option *ngFor="let team of teams" [value]="team.id">Team {{team.name}}</option>
-      </select>
-    </div>
+  <div class="header-container">
+    <h2 class="clickable-title">Team Members Progress</h2>
   </div>
-  
-  <!-- Main chart area with separate scrollable and fixed sections -->
-  <div class="chart-area">
-    <!-- Scrollable area for bars only -->
-    <div class="chart-scroll-container">
-      <div class="chart-content-area" #chartContainer>
-        <!-- NgxCharts component with X-axis disabled -->
-        <ngx-charts-bar-horizontal
-          [view]="view"
-          [scheme]="defaultColors"
-          [results]="displayedTeamData"
-          [gradient]="gradient"
-          [xAxis]="showXAxis"
-          [yAxis]="showYAxis"
-          [legend]="showLegend"
-          [showXAxisLabel]="showXAxisLabel"
-          [showYAxisLabel]="showYAxisLabel"
-          [animations]="animations"
-          [xScaleMax]="xScaleMax"
-          [xScaleMin]="xScaleMin"
-          [roundDomains]="roundDomains"
-          (select)="onSelect($event)">
-        </ngx-charts-bar-horizontal>
-      </div>
+  <div class="chart-container">
+    <div class="chart-area">
+      <ngx-charts-bar-horizontal
+        *ngIf="chartData && chartData.length > 0"
+        [view]="view"
+        [scheme]="colorScheme"
+        [results]="chartData"
+        [xAxis]="showXAxis"
+        [yAxis]="showYAxis"
+        [xAxisLabel]="xAxisLabel"
+        [yAxisLabel]="yAxisLabel"
+        [showXAxisLabel]="showXAxisLabel"
+        [showYAxisLabel]="showYAxisLabel"
+        [barPadding]="8"
+        [showGridLines]="true"
+        [xScaleMin]="xScaleMin"
+        [xScaleMax]="xScaleMax"
+        [roundDomains]="true"
+        (select)="onSelect($event)">
+      </ngx-charts-bar-horizontal>
     </div>
-    
-    <!-- Fixed area for x-axis and label -->
-    <div class="fixed-axis-container">
-      <!-- Custom x-axis with markers -->
-      <div class="custom-x-axis">
-      <b>  <div class="axis-marker" style="left: 0%">0</div>
-        <div class="axis-marker" style="left: 50%">50</div>
-        <div class="axis-marker" style="left: 100%">100</div>
-        <div class="axis-line"></div></b>
+    <div *ngIf="!chartData || chartData.length === 0" class="no-data">
+      <div class="no-data-text">
+        <ng-container *ngIf="!isBackendAvailable">
+          <div class="error-message">{{ errorMessage }}</div>
+          <div class="retry-instructions">Please start the backend server and try again.</div>
+        </ng-container>
+        <ng-container *ngIf="isBackendAvailable">
+          {{ errorMessage || 'No data available' }}
+        </ng-container>
       </div>
-      
-      <!-- X-axis label -->
-      <div class="x-axis-label"><b>Tasks Completed</b></div>
+      <button class="retry-button" (click)="loadTeamMembersProgress()">Retry</button>
     </div>
   </div>
 </div>

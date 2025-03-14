@@ -1,6 +1,6 @@
-<!-- vertical-bar.component.html -->
+<!-- objective-performance.component.html -->
 <div class="chart-card">
-  <h2>Teams Progress</h2>
+  <h2>Objective Performance</h2>
   <div class="chart-container">
     <div class="chart-area" *ngIf="!errorMessage; else errorTemplate">
       <ngx-charts-bar-vertical
@@ -20,11 +20,10 @@
         [animations]="animations"
         [showGridLines]="true"
         [yScaleMin]="0"
-        [yScaleMax]="100"
         [tooltipDisabled]="false"
         [showDataLabel]="true"
         [dataLabelFormatting]="yAxisTickFormatting"
-        
+        [barWidth]="40"
         [trimXAxisTicks]="false"
         [rotateXAxisTicks]="false"
         [maxXAxisTickLength]="16"
@@ -35,4 +34,4 @@
       <div class="error-message">{{ errorMessage }}</div>
     </ng-template>
   </div>
-</div>
+</div> 
